@@ -1,6 +1,6 @@
 # IC50 data parser
 ## Description
-This script parses inhibition and IC50 data from [Herreros et al 2015](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0135139#sec023), combining their data into a single row of useful data for a given compound. The relevant tables (Tables 1 and 7) are included in this repo, in the `/data` directory. 
+This script parses inhibition and IC50 data from [Herreros et al 2015](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0135139#sec023), combining their data into a single row of useful data for each given compound. The relevant tables (Tables 1 and 7) are included in this repo, in the `/data` directory. The output from the script is included as `output.csv` in the root directory of the repo. Running this script will overwrite this CSV file. 
 
 ## Usage
 
