@@ -33,14 +33,13 @@ def parse_inhibition_xlsx_file(filepath):
     inhibition_dict = {}
     wb = load_workbook(filepath)
     ws = wb.active
-    for i in range(2, ws.max_column, 3): # iterate over columns in threes to match the format
-        values = ws.iter_rows(min_col=i, max_col=i+1, values_only=True)
-        for value in values:
-            if not str(value[0]).startswith("TCMDC"): # skip rows without data in them
-                continue
-            if value[1] is None:
-                raise ValueError("Expected inhibition value, but got None.")
-            inhibition_dict[value[0]] = value[1]
+    rows = ws.iter_rows(values_only=True)
+    for row in rows:
+        if not any(row): # skip empty lines
+            continue
+        for i, cell in enumerate(row):
+            if isinstance(cell, str) and cell.startswith("TCMDC"):
+                inhibition_dict[cell] = row[i+1] # grab the inhib data immediately to the right of the compound ID
     return inhibition_dict
 
 def parse_ic50_file(filepath, inhibition_dict):
@@ -60,19 +59,23 @@ def parse_ic50_file(filepath, inhibition_dict):
     wb = load_workbook(filepath)
     ws = wb.active
     values = ws.iter_rows(values_only=True)
+    next(values) # skip header rows
+    next(values) 
     for value in values:
-        if not str(value[0]).startswith("TCMDC"):
+        if not any(value):
             continue
-        compound = Compound(
-            id=value[0],
-            pct_inhibition=inhibition_dict[value[0]],
-            pf_gametocyte_ic50_avg=value[3],
-            pf_gametocyte_ic50_sd=value[4],
-            hepg2_cytotoxicity_ic50=value[6],
-            hepg2_pf_ic50_ratio=value[8],
-            pc_asexual_ic50=value[9]
-        )
-        compound_list.append(compound)
+        if not isinstance(value[0], str) and value[0].startswith("TCMDC"):
+            continue
+        compound_list.append(
+            Compound(
+                id=value[0],
+                pct_inhibition=inhibition_dict[value[0]],
+                pf_gametocyte_ic50_avg=value[3],
+                pf_gametocyte_ic50_sd=value[4],
+                hepg2_cytotoxicity_ic50=value[6],
+                hepg2_pf_ic50_ratio=value[8],
+                pc_asexual_ic50=value[9]
+        ))
     return compound_list
 
 def output_csv(compound_list, output_filepath):
