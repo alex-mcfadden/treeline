@@ -71,23 +71,26 @@ def parse_ic50_file(filepath, inhibition_dict):
         except KeyError as e:
             logging.error(f"Could not find inhibition value for {value[0]}")
             raise e
-        try:
-            compound_list.append(
-                Compound(
-                    id=value[0],
-                    pct_inhibition=inhibition_value,
-                    pf_gametocyte_ic50_avg=value[3],
-                    pf_gametocyte_ic50_sd=value[4],
-                    hepg2_cytotoxicity_ic50=value[6],
-                    hepg2_pf_ic50_ratio=value[8],
-                    pc_asexual_ic50=value[9]
-            ))
-        except IndexError as e:
-            logging.error(f"Could not find IC50 values for {value[0]}")
-            raise e
+        compound_list.append(create_compound(value, inhibition_value))
     else:
         logging.debug(f"Parsed IC50 data for {len(compound_list)} compounds.")
     return compound_list
+
+def create_compound(value, inhibition_value):
+    try:
+        return Compound(
+            id=value[0],
+            pct_inhibition=inhibition_value,
+            pf_gametocyte_ic50_avg=value[3],
+            pf_gametocyte_ic50_sd=value[4],
+            hepg2_cytotoxicity_ic50=value[6],
+            hepg2_pf_ic50_ratio=value[8],
+            pc_asexual_ic50=value[9])
+    except IndexError as e:
+        logging.error(f"Could not find IC50 values for {value[0]}")
+        raise e
+
+
 
 def output_csv(compound_list, output_filepath):
     """

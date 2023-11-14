@@ -1,5 +1,5 @@
 from compound_parser import (
-    Compound, parse_ic50_file, parse_inhibition_xlsx_file, output_csv)
+    Compound, parse_ic50_file, parse_inhibition_xlsx_file, output_csv, create_compound)
 import os
 import pytest
 
@@ -24,11 +24,21 @@ class TestParser:
         inhibition_dict = parse_inhibition_xlsx_file(paths['inhibition'])
         compound_list = parse_ic50_file(paths['ic50'], inhibition_dict)
         assert len(compound_list) == 56
-           
+
+    def test_ic50_parser_raises_with_missing_inhibition_data(self, paths):
+        inhibition_dict = parse_inhibition_xlsx_file(paths['inhibition'])
+        inhibition_dict.pop("TCMDC-132869")
+        with pytest.raises(KeyError):
+            parse_ic50_file(paths['ic50'], inhibition_dict)
+    
+    def test_create_compound_raises_with_missing_ic50_values(self):
+        bad_data = ["TCMDC-123456", "bad", "data"]
+        with pytest.raises(IndexError):
+            create_compound(bad_data, 99.9)
     def test_inhibition_parser(self, paths):
         inhibition_dict = parse_inhibition_xlsx_file(paths['inhibition'])
         assert len(inhibition_dict) == 13244
-    
+
     def test_csv_writer(self, compound_list, paths):
         output_csv(compound_list, paths['output'])
         assert os.path.exists(paths['output'])
@@ -41,3 +51,5 @@ class TestParser:
             assert lines[3] == "TCMDC-123458,99.9,1.0,0.1,2.0,2.0,3.0\n"
         os.remove(paths['output'])
 
+    # next: add sad path tests
+    
